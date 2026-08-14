@@ -10,20 +10,6 @@ OIDC is built on top of OAuth 2.0 and provides a standardized method for verifyi
 
 ---
 
-## Project Objectives
-
-* Understand the OpenID Connect Authorization Code Flow
-* Configure Okta as an Authorization Server and Identity Provider
-* Create and test authentication requests
-* Understand the purpose of scopes and claims
-* Observe authorization code generation
-* Validate Redirect URI behavior
-* Perform a token exchange using Postman
-* Analyze issued tokens and claims
-* Understand the separation between authentication and authorization
-
----
-
 ## Architecture
 
 The authentication flow follows the process below:
