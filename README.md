@@ -4,7 +4,7 @@
 
 This project demonstrates the implementation of OpenID Connect (OIDC) authentication using Okta as the Authorization Server and Identity Provider (IdP). The lab focuses on understanding the underlying mechanics of the OIDC Authorization Code Flow, including authentication requests, authorization code generation, redirect behavior, token exchange, and token issuance.
 
-Unlike a traditional application integration, this project intentionally isolates the protocol itself. Rather than developing a client application to complete the flow, the authorization code was manually obtained and exchanged for tokens using Postman. This approach provided visibility into each stage of the authentication process and a deeper understanding of how modern authentication protocols operate.
+Unlike a traditional application integration, this project isolates the protocol itself. Rather than developing a client application to complete the flow, the authorization code was manually obtained and exchanged for tokens using Postman. This approach provided visibility into each stage of the authentication process and a deeper understanding of how modern authentication protocols operate.
 
 OIDC is built on top of OAuth 2.0 and provides a standardized method for verifying user identities while securely delivering identity information to applications.
 
@@ -32,7 +32,6 @@ The authentication flow follows the process below:
 | --------------------------------- | ---------------------------------------- |
 | Okta Identity Engine              | Authorization Server / Identity Provider |
 | OpenID Connect (OIDC)             | Authentication Protocol                  |
-| OAuth 2.0 Authorization Code Flow | Token Exchange Framework                 |
 | Postman                           | Token Exchange Testing                   |
 | ID Tokens                         | User Identity Information                |
 | Access Tokens                     | API Authorization                        |
@@ -314,17 +313,14 @@ Access Granted
 
 * Identity and Access Management (IAM)
 * OpenID Connect (OIDC)
-* OAuth 2.0 Authorization Code Flow
 * Modern Authentication Protocols
 * Authentication Architecture
 * Authorization Concepts
 * Token-Based Authentication
-* Claims Management
 * Redirect URI Configuration
 * Authorization Server Configuration
 * Postman API Testing
 * Okta Administration
-* Identity Federation Fundamentals
 
 ---
 
