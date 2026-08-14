@@ -2,11 +2,25 @@
 
 ## Overview
 
-This project demonstrates the implementation of OpenID Connect (OIDC) authentication using Okta as the Authorization Server and Identity Provider (IdP), and a client application acting as the relying party.
+This project demonstrates the implementation of OpenID Connect (OIDC) authentication using Okta as the Authorization Server and Identity Provider (IdP). The lab focuses on understanding the underlying mechanics of the OIDC Authorization Code Flow, including authentication requests, authorization code generation, redirect behavior, token exchange, and token issuance.
 
-The objective of this lab is to understand how modern applications authenticate users using the OIDC Authorization Code Flow. The project showcases how authentication requests are processed, how authorization codes are exchanged for tokens, and how identity information is securely transmitted through claims contained within tokens.
+Unlike a traditional application integration, this project intentionally isolates the protocol itself. Rather than developing a client application to complete the flow, the authorization code was manually obtained and exchanged for tokens using Postman. This approach provided visibility into each stage of the authentication process and a deeper understanding of how modern authentication protocols operate.
 
-OIDC is built on top of OAuth 2.0 and provides a standardized method for verifying user identity while enabling secure access to applications.
+OIDC is built on top of OAuth 2.0 and provides a standardized method for verifying user identities while securely delivering identity information to applications.
+
+---
+
+## Project Objectives
+
+* Understand the OpenID Connect Authorization Code Flow
+* Configure Okta as an Authorization Server and Identity Provider
+* Create and test authentication requests
+* Understand the purpose of scopes and claims
+* Observe authorization code generation
+* Validate Redirect URI behavior
+* Perform a token exchange using Postman
+* Analyze issued tokens and claims
+* Understand the separation between authentication and authorization
 
 ---
 
@@ -14,14 +28,15 @@ OIDC is built on top of OAuth 2.0 and provides a standardized method for verifyi
 
 The authentication flow follows the process below:
 
-1. A user attempts to access an application.
-2. The client application redirects the user to Okta for authentication.
-3. The authentication request includes metadata such as client information, redirect URI, and requested scopes.
+1. A user attempts to log in to an application.
+2. The client application sends an authentication request to Okta.
+3. The request includes metadata such as scopes, redirect URI, response type, and client information.
 4. Okta authenticates the user.
-5. Okta issues an authorization code and redirects the user back to the application.
-6. The application exchanges the authorization code at Okta's token endpoint.
-7. Okta validates the request and issues tokens.
-8. The application validates the tokens and grants access to the user.
+5. Okta generates an Authorization Code.
+6. Okta redirects the user back to the configured Redirect URI.
+7. The client exchanges the Authorization Code at Okta's Token Endpoint.
+8. Okta validates the request and issues tokens containing user claims.
+9. The application validates the tokens and establishes an authenticated session.
 
 ---
 
@@ -32,10 +47,10 @@ The authentication flow follows the process below:
 | Okta Identity Engine              | Authorization Server / Identity Provider |
 | OpenID Connect (OIDC)             | Authentication Protocol                  |
 | OAuth 2.0 Authorization Code Flow | Token Exchange Framework                 |
-| Client Application                | Application requesting authentication    |
-| ID Tokens                         | User identity information                |
-| Access Tokens                     | API authorization                        |
-| Claims                            | User attributes within tokens            |
+| Postman                           | Token Exchange Testing                   |
+| ID Tokens                         | User Identity Information                |
+| Access Tokens                     | API Authorization                        |
+| Claims                            | User Attributes Within Tokens            |
 
 ---
 
@@ -54,30 +69,13 @@ Responsibilities include:
 * Providing identity information
 * Enforcing authentication policies
 
-Okta becomes the trusted authority responsible for validating user identities.
-
----
-
-### Client Application
-
-The client application initiates the authentication process when a user attempts to log in.
-
-Responsibilities include:
-
-* Redirecting users to Okta
-* Sending authentication requests
-* Receiving authorization codes
-* Exchanging codes for tokens
-* Validating tokens
-* Establishing application sessions
-
-Unlike traditional authentication methods, the application never directly handles user credentials.
+Okta acts as the trusted authority responsible for validating user identities and issuing tokens to applications.
 
 ---
 
 ### Authentication Request
 
-The authentication process begins when the client sends an authorization request to Okta.
+The authentication process begins when a client application redirects a user to Okta.
 
 The request contains metadata such as:
 
@@ -88,7 +86,7 @@ The request contains metadata such as:
 * State Parameter
 * Nonce Value
 
-Example requested scopes:
+Example scopes:
 
 ```text
 openid
@@ -102,7 +100,7 @@ The `openid` scope identifies the request as an OpenID Connect authentication re
 
 ### User Authentication
 
-After receiving the authentication request, Okta authenticates the user through configured authentication methods.
+After receiving the authentication request, Okta authenticates the user using configured authentication methods.
 
 Examples include:
 
@@ -111,24 +109,22 @@ Examples include:
 * Passwordless Authentication
 * Adaptive Authentication Policies
 
-Once successful, Okta establishes the user's authenticated session.
+Once authentication succeeds, Okta creates a session and continues the authorization process.
 
 ---
 
 ### Authorization Code
 
-Following successful authentication, Okta generates an authorization code.
+After successful authentication, Okta generates an Authorization Code.
 
-The authorization code is:
+The Authorization Code is:
 
 * Temporary
 * Short-lived
 * Single-use
-* Not directly usable by applications
+* Not directly usable for API access
 
-The code is sent back to the client application's configured Redirect URI.
-
-This mechanism prevents sensitive tokens from being exposed through the user's browser.
+The Authorization Code serves as an intermediary credential that can later be exchanged for tokens.
 
 ---
 
@@ -136,33 +132,93 @@ This mechanism prevents sensitive tokens from being exposed through the user's b
 
 The Redirect URI is a trusted endpoint registered within Okta.
 
-After authentication, Okta redirects the user back to this endpoint and includes the authorization code.
+After successful authentication, Okta redirects the browser to the configured Redirect URI and appends the Authorization Code as a query parameter.
+
+Example:
+
+```text
+https://sample-app.com/callback?code=AUTHORIZATION_CODE
+```
 
 Only preconfigured Redirect URIs are allowed, helping prevent unauthorized token delivery.
 
 ---
 
+### Authorization Code Flow Validation
+
+This project intentionally focused on understanding the protocol rather than building a fully functional client application.
+
+A sample Redirect URI was configured within Okta, but no actual application existed at that location.
+
+The authentication flow behaved as expected:
+
+1. Okta authenticated the user.
+2. Okta redirected the browser to the configured Redirect URI.
+3. The redirect destination did not exist.
+4. The browser URL still contained the generated Authorization Code as a query parameter.
+
+Because the Authorization Code is expected to travel through the user's browser, the code remained visible within the URL even though the destination application was unavailable.
+
+The Authorization Code was then manually extracted from the browser URL for testing purposes.
+
+This allowed the remainder of the OIDC flow to be validated without building a custom client application.
+
+---
+
 ### Token Exchange
 
-Once the client receives the authorization code, it communicates directly with Okta's Token Endpoint.
+In production environments, the Authorization Code is typically exchanged by a backend application.
 
-The client submits:
+The backend sends a secure request to Okta's Token Endpoint containing:
 
 * Authorization Code
 * Client Credentials
 * Redirect URI
 
-The authorization code is exchanged for tokens through a secure back-channel communication.
+Okta validates the request and returns tokens.
 
-This process is commonly referred to as the Authorization Code Flow.
+For this lab, Postman was used to simulate the backend application.
+
+The Authorization Code obtained from the browser URL was manually submitted to Okta's Token Endpoint, successfully completing the Authorization Code Flow and validating the token exchange process.
+
+This approach provided direct visibility into how applications obtain tokens from an Authorization Server.
+
+---
+
+### Why Token Exchange Happens on the Backend
+
+A key security principle of OIDC is that Authorization Codes may travel through the browser, while token acquisition should occur through a secure back-channel connection.
+
+Authorization Code:
+
+```text
+Browser
+   │
+   ▼
+Authorization Code
+```
+
+Token Exchange:
+
+```text
+Backend Application
+   │
+   │ POST /token
+   ▼
+Okta Token Endpoint
+   │
+   ▼
+ID Token
+Access Token
+```
+
+Keeping token exchanges on the backend helps protect sensitive credentials and reduces exposure of tokens within the browser.
 
 ---
 
 ### Tokens
 
-After validating the authorization code request, Okta issues tokens to the client application.
-
-Common tokens include:
+After validating the Authorization Code, Okta issues tokens to the client.
 
 #### ID Token
 
@@ -176,13 +232,13 @@ Examples:
 * Authentication Time
 * Session Information
 
-The ID Token allows the application to verify who the user is.
+The ID Token allows applications to verify user identity.
 
 #### Access Token
 
-The Access Token is used to access protected APIs and resources.
+The Access Token is used to authorize requests to protected APIs and resources.
 
-The token represents the permissions granted during authentication.
+The token represents permissions granted during authentication.
 
 ---
 
@@ -200,7 +256,7 @@ Examples include:
 * Roles
 * Custom Attributes
 
-Applications use claims to personalize user experiences and make authorization decisions.
+Applications use claims to personalize experiences and make authorization decisions.
 
 ---
 
@@ -212,7 +268,7 @@ This project highlights the distinction between authentication and authorization
 
 Authentication answers:
 
-> "Who is the user?"
+> Who is the user?
 
 Okta performs authentication by validating the user's identity.
 
@@ -220,15 +276,15 @@ Okta performs authentication by validating the user's identity.
 
 Authorization answers:
 
-> "What is the user allowed to access?"
+> What is the user allowed to access?
 
-Applications use claims contained within tokens to determine permissions and access levels.
+Applications use token claims to determine permissions and access levels.
 
 ---
 
 ## OIDC Authorization Code Flow
 
-```text id="3d4z9m"
+```text
 User
  │
  ▼
@@ -247,9 +303,12 @@ Authorization Code Issued
 Redirect URI
  │
  ▼
-Client Application
+Authorization Code Retrieved
  │
- │ Authorization Code Exchange
+ ▼
+Postman (Client Simulation)
+ │
+ │ POST /token
  ▼
 Okta Token Endpoint
  │
@@ -257,7 +316,7 @@ Okta Token Endpoint
 ID Token + Access Token
  │
  ▼
-Client Validates Tokens
+Token Validation
  │
  ▼
 Access Granted
@@ -270,20 +329,25 @@ Access Granted
 * Identity and Access Management (IAM)
 * OpenID Connect (OIDC)
 * OAuth 2.0 Authorization Code Flow
+* Modern Authentication Protocols
 * Authentication Architecture
 * Authorization Concepts
 * Token-Based Authentication
 * Claims Management
-* Okta Administration
 * Redirect URI Configuration
-* Client Application Integration
-* Identity Federation Concepts
-* Modern Authentication Protocols
+* Authorization Server Configuration
+* Postman API Testing
+* Okta Administration
+* Identity Federation Fundamentals
 
 ---
 
 ## Learning Outcomes
 
-By completing this project, I gained hands-on experience implementing OpenID Connect authentication using Okta. The project demonstrates how modern applications authenticate users through an Authorization Server, securely exchange authorization codes for tokens, and consume claims to establish authenticated sessions. This lab reflects real-world authentication architectures used by cloud-native applications, SaaS platforms, and enterprise identity ecosystems.
-**Flow:** Authorization Code Flow
-**Project Type:** Authentication Protocol Lab
+By completing this project, I gained hands-on experience implementing and validating the OpenID Connect Authorization Code Flow using Okta.
+
+Rather than relying on a prebuilt application, this lab exposed the underlying mechanics of the protocol, including authentication requests, authorization code generation, redirect URI behavior, token endpoint interactions, and token issuance.
+
+Using Postman to manually exchange the Authorization Code provided a deeper understanding of how applications securely obtain tokens from an Authorization Server and how identity information is delivered through claims contained within those tokens.
+
+This project mirrors the authentication architecture used by modern cloud applications, SaaS platforms, and enterprise identity ecosystems.
